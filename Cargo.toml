@@ -8,3 +8,4 @@ edition = "2018"
 [dependencies]
 serenity = {version = "0.10", default-features = false, features = ["client", "gateway", "rustls_backend", "model", "standard_framework", "framework"] }
 tokio = { version = "1.11.0", features = ["macros", "rt-multi-thread"] }
+toml = "0.5"
