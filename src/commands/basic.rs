@@ -1,4 +1,7 @@
-use serenity::framework::standard::{macros::command, CommandResult};
+use serenity::framework::standard::{
+    macros::{command, group},
+    CommandResult,
+};
 use serenity::model::prelude::*;
 use serenity::prelude::*;
 use std::process::Command;
