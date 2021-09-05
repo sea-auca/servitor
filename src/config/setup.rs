@@ -1,12 +1,14 @@
 use serde::Deserialize;
 use serenity::{
-    client::bridge::gateway::GatewayIntents,
     framework::standard::{macros::hook, CommandGroup, CommandResult, StandardFramework},
     model::channel::Message,
+    client::bridge::gateway::GatewayIntents,
     prelude::*,
 };
-use std::{error::Error, fs};
+use std::{fs};
 use toml;
+use crate::handlers::handler;
+use crate::frameworks::framework;
 
 #[derive(Debug, Deserialize)]
 pub struct Config {
@@ -27,36 +29,18 @@ impl Config {
 
 pub struct Settings {
     pub config: Config,
+    pub intents: GatewayIntents,
     pub framework: StandardFramework,
+    pub handler: handler::Handler,
 }
 
 impl Settings {
     pub fn create_settings(path: String, group: &'static CommandGroup) -> Settings {
         let config = Config::from_toml(path);
-        let framework = StandardFramework::new()
-            .configure(|c| c.prefix("~"))
-            .before(before)
-            .after(after)
-            .group(group);
-        Settings { config, framework }
-    }
-}
-#[hook]
-async fn before(ctx: &Context, msg: &Message, command_name: &str) -> bool {
-   // if msg.author.bot {
-   //     return false;
-   // }
-    println!(
-        "Got command '{}' by user '{}'",
-        command_name, msg.author.name
-    );
-    true
-}
-
-#[hook]
-async fn after(_ctx: &Context, _msg: &Message, command_name: &str, command_result: CommandResult) {
-    match command_result {
-        Ok(()) => println!("Processed command '{}'", command_name),
-        Err(why) => println!("Command '{}' returned error {:?}", command_name, why),
+        let mut framework = framework::create_framework("~");
+        framework.group_add(group);
+        let intents = GatewayIntents::all();
+        let handler = handler::Handler;
+        Settings { config, intents, framework, handler }
     }
 }

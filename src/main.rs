@@ -1,6 +1,7 @@
 mod commands;
 mod config;
 mod handlers;
+mod frameworks;
 
 use commands::basic::*;
 use config::setup;

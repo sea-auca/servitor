@@ -1,10 +1,10 @@
 use serenity::{
     async_trait,
     model::{
-        channel::{Message, ReactionType},
+       // channel::{Message, ReactionType},
         event::ResumedEvent,
         gateway::Ready,
-        id::EmojiId,
+        //id::EmojiId,
     },
     prelude::*,
 };
@@ -19,24 +19,5 @@ impl EventHandler for Handler {
 
     async fn resume(&self, _: Context, _: ResumedEvent) {
         println!("Resumed");
-    }
-
-    async fn message(&self, ctx: Context, msg: Message) {
-        if &msg.content.chars().count() > &0 && &msg.content.chars().next().unwrap() == &'~' {
-            return;
-        }
-        if msg.content.contains("Яман") || msg.content.contains("яман") {
-            let reaction_type = ReactionType::Custom {
-                animated: false,
-                id: EmojiId(798454339134816256),
-                name: Some(String::from(":shit_taster:")),
-            };
-            if let Err(why) = msg.react(&ctx, reaction_type).await {
-                println!("Error reacting: {:?}", why);
-            }
-            if let Err(why) = msg.channel_id.say(&ctx.http, "Курлык-курлык!").await {
-                println!("Error sending message: {:?}", why);
-            }
-        }
     }
 }
