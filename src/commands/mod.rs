@@ -4,15 +4,10 @@ pub mod sudo;
 
 use serenity::{framework::standard::{Args, macros::help, help_commands, CommandResult, CommandGroup, HelpOptions}, model::prelude::*, prelude::*};
 
-
-use basic::GENERAL_GROUP;
-use basic_member::BASICMEMBER_GROUP;
-use sudo::SUDO_GROUP;
-
 use std::collections::HashSet;
 
 #[help]
-#[individual_command_tip = "~help <command name> to see information about specific command"]
+#[individual_command_tip = "'~help <command name> to see information about specific command'"]
 #[command_not_found_text = "Sorry, we currently do not have such command!"]
 #[max_levenshtein_distance(3)]
 #[lacking_permissions = "Hide"]

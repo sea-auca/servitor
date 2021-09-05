@@ -11,6 +11,7 @@ struct General;
 
 #[command]
 #[max_args(0)]
+#[description("Check whether bot is running and responding")]
 async fn ping(ctx: &Context, msg: &Message) -> CommandResult {
     msg.channel_id.say(&ctx.http, "Pong!").await?;
 
@@ -19,6 +20,8 @@ async fn ping(ctx: &Context, msg: &Message) -> CommandResult {
 
 #[command]
 #[min_args(1)]
+#[description("Returns arguments provided to function.")]
+#[usage("[args]")]
 async fn echo(ctx: &Context, msg: &Message) -> CommandResult {
     msg.channel_id.say(&ctx.http, &msg.content).await?;
     Ok(())
@@ -26,6 +29,8 @@ async fn echo(ctx: &Context, msg: &Message) -> CommandResult {
 
 #[command]
 #[max_args(0)]
+#[description("Generate nice quote.")]
+#[usage("")]
 async fn fortune(ctx: &Context, msg: &Message) -> CommandResult {
     let output = Command::new("/usr/games/fortune")
         .output()
@@ -37,6 +42,7 @@ async fn fortune(ctx: &Context, msg: &Message) -> CommandResult {
 }
 
 #[command]
+#[description("Get information about bot.")]
 async fn about(ctx: &Context, msg: &Message) -> CommandResult {
     msg.channel_id.say(&ctx.http, ABOUT_MSG).await?;
     Ok(())
