@@ -4,15 +4,12 @@ mod handlers;
 
 use commands::basic::*;
 use config::setup;
-use handlers::handler;
 use serenity::{
-    client::bridge::gateway::GatewayIntents,
     //    client::bridge::gateway::ShardManager,
-    framework::{standard::macros::group, StandardFramework},
+    framework::{standard::macros::group},
     // http::Http,
     prelude::*,
 };
-use std::env;
 
 #[group]
 #[commands(ping, echo, fortune, help, about)]
@@ -23,9 +20,9 @@ async fn main() {
     let settings =
         setup::Settings::create_settings(String::from("data/Config.toml"), &GENERAL_GROUP);
     let mut client = Client::builder(settings.config.get_token())
-        .intents(GatewayIntents::all())
+        .intents(settings.intents)
         .framework(settings.framework)
-        .event_handler(handler::Handler)
+        .event_handler(settings.handler)
         .await
         .expect("Error creating client");
     if let Err(why) = client.start().await {
