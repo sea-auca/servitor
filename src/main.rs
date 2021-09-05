@@ -2,6 +2,8 @@ mod commands;
 mod config;
 mod frameworks;
 mod handlers;
+mod utilities;
+mod global;
 
 use commands::HELP;
 use commands::basic::GENERAL_GROUP;
@@ -9,6 +11,9 @@ use commands::basic_member::BASICMEMBER_GROUP;
 use commands::sudo::SUDO_GROUP;
 use config::setup;
 use serenity::prelude::*;
+use global::shared;
+use utilities::logging;
+
 #[tokio::main]
 async fn main() {
     let settings = setup::Settings::create_settings(
@@ -23,6 +28,6 @@ async fn main() {
         .await
         .expect("Error creating client");
     if let Err(why) = client.start().await {
-        print!("Client error: {:?}\n", why);
+        (*shared::LOGGER).lock().unwrap().write_log(format!("Client error: {:?}\n", why), logging::Level::Error);
     }
 }

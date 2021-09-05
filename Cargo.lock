@@ -855,6 +855,8 @@ dependencies = [
 name = "servitor"
 version = "0.1.0"
 dependencies = [
+ "chrono",
+ "lazy_static",
  "serde",
  "serenity",
  "tokio",

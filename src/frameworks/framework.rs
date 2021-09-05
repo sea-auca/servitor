@@ -1,12 +1,15 @@
 use serenity::{
-    framework::standard::{macros::hook, CommandGroup, CommandResult, StandardFramework},
+    framework::standard::{macros::hook, CommandResult, StandardFramework},
     model::{
         channel::{Message, ReactionType},
         id::{EmojiId, UserId},
     },
     client::Context
 };
-use std::collections::HashSet;
+use std::{collections::HashSet};
+use crate::global::shared;
+use crate::utilities::logging::Level;
+
 
 pub fn create_framework(prefix: &str) -> StandardFramework {
     let mut owners: HashSet<UserId> = HashSet::new();
@@ -24,10 +27,8 @@ async fn before(_ctx: &Context, msg: &Message, command_name: &str) -> bool {
    // if msg.author.bot {
    //     return false;
    // }
-    println!(
-        "Got command '{}' by user '{}'",
-        command_name, msg.author.name
-    );
+    
+    (*shared::LOGGER).lock().unwrap().write_log(format!("Got command '{}' by user '{}'",command_name, msg.author.name), Level::Debug);
     true
 }
 
