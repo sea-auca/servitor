@@ -855,6 +855,7 @@ dependencies = [
 name = "servitor"
 version = "0.1.0"
 dependencies = [
+ "serde",
  "serenity",
  "tokio",
  "toml",
