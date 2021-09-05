@@ -3,7 +3,7 @@ use crate::handlers::handler;
 use serde::Deserialize;
 use serenity::{
     client::bridge::gateway::GatewayIntents,
-    framework::standard::{macros::hook, CommandGroup, CommandResult, StandardFramework},
+    framework::standard::{macros::hook, HelpCommand, CommandGroup, CommandResult, StandardFramework},
     model::channel::Message,
     prelude::*,
 };
@@ -35,9 +35,9 @@ pub struct Settings {
 }
 
 impl Settings {
-    pub fn create_settings(path: String, group: &Vec<&'static CommandGroup>) -> Settings {
+    pub fn create_settings(path: String, group: &Vec<&'static CommandGroup>, help: &'static HelpCommand) -> Settings {
         let config = Config::from_toml(path);
-        let mut framework = framework::create_framework("~");
+        let mut framework = framework::create_framework("~").help(help);
         for g in group {
             framework.group_add(g);
         }
