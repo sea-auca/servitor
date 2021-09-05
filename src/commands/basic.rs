@@ -10,6 +10,7 @@ const ABOUT_MSG: &str = "Hello! This is simple utility bot developed by our comm
     We are still in process of development and new features will be added later";
 
 #[command]
+#[max_args(0)]
 async fn ping(ctx: &Context, msg: &Message) -> CommandResult {
     msg.channel_id.say(&ctx.http, "Pong!").await?;
 
@@ -17,12 +18,14 @@ async fn ping(ctx: &Context, msg: &Message) -> CommandResult {
 }
 
 #[command]
+#[min_args(1)]
 async fn echo(ctx: &Context, msg: &Message) -> CommandResult {
     msg.channel_id.say(&ctx.http, &msg.content).await?;
     Ok(())
 }
 
 #[command]
+#[max_args(0)]
 async fn fortune(ctx: &Context, msg: &Message) -> CommandResult {
     let output = Command::new("/usr/games/fortune")
         .output()

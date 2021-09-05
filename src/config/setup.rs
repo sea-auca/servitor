@@ -35,10 +35,11 @@ pub struct Settings {
 }
 
 impl Settings {
-    pub fn create_settings(path: String, group: &'static CommandGroup) -> Settings {
+    pub fn create_settings(path: String, group: &'static CommandGroup, sudo: &'static CommandGroup) -> Settings {
         let config = Config::from_toml(path);
         let mut framework = framework::create_framework("~");
         framework.group_add(group);
+        framework.group_add(sudo);
         let intents = GatewayIntents::all();
         let handler = handler::Handler;
         Settings { config, intents, framework, handler }

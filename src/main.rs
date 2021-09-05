@@ -4,6 +4,7 @@ mod handlers;
 mod frameworks;
 
 use commands::basic::*;
+use commands::sudo::*;
 use config::setup;
 use serenity::{
     //    client::bridge::gateway::ShardManager,
@@ -16,10 +17,16 @@ use serenity::{
 #[commands(ping, echo, fortune, help, about)]
 struct General;
 
+
+#[group]
+#[owners_only]
+#[commands(sudo)]
+struct Sudo;
+
 #[tokio::main]
 async fn main() {
     let settings =
-        setup::Settings::create_settings(String::from("data/Config.toml"), &GENERAL_GROUP);
+        setup::Settings::create_settings(String::from("data/Config.toml"), &GENERAL_GROUP, &SUDO_GROUP);
     let mut client = Client::builder(settings.config.get_token())
         .intents(settings.intents)
         .framework(settings.framework)
