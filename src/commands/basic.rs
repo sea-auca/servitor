@@ -1,13 +1,13 @@
-use serenity::framework::standard::{
-    macros::{command},
-    CommandResult,
-};
+use serenity::framework::standard::{macros::command, macros::group, CommandResult};
 use serenity::model::prelude::*;
 use serenity::prelude::*;
 use std::process::Command;
-
 const ABOUT_MSG: &str = "Hello! This is simple utility bot developed by our community. 
     We are still in process of development and new features will be added later";
+
+#[group]
+#[commands(ping, echo, fortune, help, about)]
+struct General;
 
 #[command]
 #[max_args(0)]

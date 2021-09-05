@@ -1,2 +1,2 @@
 pub mod basic;
-pub mod sudo;
+pub mod basic_member;
