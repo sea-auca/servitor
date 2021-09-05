@@ -1,14 +1,14 @@
+use crate::frameworks::framework;
+use crate::handlers::handler;
 use serde::Deserialize;
 use serenity::{
+    client::bridge::gateway::GatewayIntents,
     framework::standard::{macros::hook, CommandGroup, CommandResult, StandardFramework},
     model::channel::Message,
-    client::bridge::gateway::GatewayIntents,
     prelude::*,
 };
-use std::{fs};
+use std::fs;
 use toml;
-use crate::handlers::handler;
-use crate::frameworks::framework;
 
 #[derive(Debug, Deserialize)]
 pub struct Config {
@@ -35,12 +35,19 @@ pub struct Settings {
 }
 
 impl Settings {
-    pub fn create_settings(path: String, group: &'static CommandGroup) -> Settings {
+    pub fn create_settings(path: String, group: &Vec<&'static CommandGroup>) -> Settings {
         let config = Config::from_toml(path);
         let mut framework = framework::create_framework("~");
-        framework.group_add(group);
+        for g in group {
+            framework.group_add(g);
+        }
         let intents = GatewayIntents::all();
         let handler = handler::Handler;
-        Settings { config, intents, framework, handler }
+        Settings {
+            config,
+            intents,
+            framework,
+            handler,
+        }
     }
 }

@@ -1,25 +1,18 @@
 mod commands;
 mod config;
-mod handlers;
 mod frameworks;
+mod handlers;
 
-use commands::basic::*;
+use commands::basic::GENERAL_GROUP;
+use commands::basic_member::BASICMEMBER_GROUP;
 use config::setup;
-use serenity::{
-    //    client::bridge::gateway::ShardManager,
-    framework::{standard::macros::group},
-    // http::Http,
-    prelude::*,
-};
-
-#[group]
-#[commands(ping, echo, fortune, help, about)]
-struct General;
-
+use serenity::prelude::*;
 #[tokio::main]
 async fn main() {
-    let settings =
-        setup::Settings::create_settings(String::from("data/Config.toml"), &GENERAL_GROUP);
+    let settings = setup::Settings::create_settings(
+        String::from("data/Config.toml"),
+        &vec![&GENERAL_GROUP, &BASICMEMBER_GROUP],
+    );
     let mut client = Client::builder(settings.config.get_token())
         .intents(settings.intents)
         .framework(settings.framework)
