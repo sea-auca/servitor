@@ -7,7 +7,7 @@ use serenity::{
 };
 use std::fs;
 use toml;
-use crate::global::shared;
+use crate::global::shared::LOGGER;
 
 #[derive(Debug, Deserialize)]
 pub struct Config {
@@ -41,7 +41,7 @@ impl Settings {
             framework.group_add(g);
         }
         {
-            (*shared::LOGGER).lock().unwrap().configure_logger("logs/bot.log");
+            LOGGER.lock().unwrap().configure_logger("logs/bot.log");
         }    
         let intents = GatewayIntents::all();
         let handler = handler::Handler;

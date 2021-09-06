@@ -1,8 +1,8 @@
 
 use crate::utilities::logging;
-use std::sync::{Arc, Mutex};
+use std::sync::{Mutex};
 use lazy_static::lazy_static;
 lazy_static! {
-    pub static ref LOGGER: Arc<Mutex<logging::Logger>> = Arc::new(Mutex::new(logging::Logger::new()));    
+    pub static ref LOGGER: Mutex<logging::Logger> = Mutex::new(logging::Logger::new());    
 }
 

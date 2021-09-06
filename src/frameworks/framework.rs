@@ -7,7 +7,7 @@ use serenity::{
     client::Context
 };
 use std::{collections::HashSet};
-use crate::global::shared;
+use crate::global::shared::LOGGER;
 use crate::utilities::logging::Level;
 
 
@@ -28,21 +28,25 @@ async fn before(_ctx: &Context, msg: &Message, command_name: &str) -> bool {
    //     return false;
    // }
     
-    (*shared::LOGGER).lock().unwrap().write_log(format!("Got command '{}' by user '{}'",command_name, msg.author.name), Level::Debug);
+    LOGGER.lock().unwrap().write_log(format!("Got command '{}' by user '{}'",command_name, msg.author.name), Level::Trace);
     true
 }
 
 #[hook]
 async fn after(_ctx: &Context, _msg: &Message, command_name: &str, command_result: CommandResult) {
     match command_result {
-        Ok(()) => println!("Processed command '{}'", command_name),
-        Err(why) => println!("Command '{}' returned error {:?}", command_name, why),
+        Ok(()) => {
+            LOGGER.lock().unwrap().write_log(format!("Processed command '{}'", command_name), Level::Trace);
+        }
+        Err(why) => {
+            LOGGER.lock().unwrap().write_log(format!("Command '{}' returned error {:?}.", command_name, why), Level::Warning);
+        }
     }
 }
 
 #[hook]
 async fn normal_message(ctx: &Context, msg: &Message) {
-    println!("Received message {:?} from user {:?}", msg.content, msg.author.name);
+    LOGGER.lock().unwrap().write_log(format!("Received message from user {}", msg.author.name), Level::Trace);
     if msg.content.contains("Яман") || msg.content.contains("яман") {
         let reaction_type = ReactionType::Custom {
             animated: false,
@@ -50,10 +54,10 @@ async fn normal_message(ctx: &Context, msg: &Message) {
             name: Some(String::from(":shit_taster:")),
         };
         if let Err(why) = msg.react(&ctx, reaction_type).await {
-            println!("Error reacting: {:?}", why);
+            LOGGER.lock().unwrap().write_log(format!("Error adding reaction {:?}", why), Level::Warning);
         }
-        if let Err(why) = msg.channel_id.say(&ctx.http, "Курлык-курлык!").await {
-            println!("Error sending message: {:?}", why);
+        if let Err(why) = msg.channel_id.say(&ctx.http, "Курлык-курлык!").await {            
+            LOGGER.lock().unwrap().write_log(format!("Error sending message {:?}", why), Level::Warning);
         }
     }
 }

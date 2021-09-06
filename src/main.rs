@@ -11,7 +11,7 @@ use commands::basic_member::BASICMEMBER_GROUP;
 use commands::sudo::SUDO_GROUP;
 use config::setup;
 use serenity::prelude::*;
-use global::shared;
+use global::shared::LOGGER;
 use utilities::logging;
 
 #[tokio::main]
@@ -28,6 +28,6 @@ async fn main() {
         .await
         .expect("Error creating client");
     if let Err(why) = client.start().await {
-        (*shared::LOGGER).lock().unwrap().write_log(format!("Client error: {:?}\n", why), logging::Level::Error);
+        LOGGER.lock().unwrap().write_log(format!("Client error: {:?}\n", why), logging::Level::Error);
     }
 }

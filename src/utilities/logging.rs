@@ -42,8 +42,7 @@ impl Logger {
         let mut file = self.file.as_ref().unwrap();
         let datetime = chrono::Utc::now();
         let level_string = level.to_string().to_uppercase();
-        let message = format!("{}\t[{}]\t{}", datetime, level_string, text);
-         
+        let message = format!("{}\t[{}]\t{}\n", datetime, level_string, text);
         file.write_all(message.as_bytes()).expect("Error writing log entry");
     }
 }

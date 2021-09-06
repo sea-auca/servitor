@@ -10,19 +10,20 @@ use serenity::{
     },
     prelude::*,
 };
+use crate::global::shared::LOGGER;
+use crate::logging::Level;
 
 pub struct Handler;
 
 #[async_trait]
 impl EventHandler for Handler {
     async fn ready(&self, _: Context, ready: Ready) {
-        println!("Connected as {}", ready.user.name);
+        LOGGER.lock().unwrap().write_log(format!("Connected as {}", ready.user.name), Level::Info);
     }
 
     async fn resume(&self, _: Context, _: ResumedEvent) {
-        println!("Resumed");
+        LOGGER.lock().unwrap().write_log(format!("Resumed!"), Level::Info);
     }
-    
     
     //welp we will do it in appropritate way later
     async fn reaction_add(&self, ctx: Context, add_reaction: Reaction) {
