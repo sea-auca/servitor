@@ -1,5 +1,4 @@
 pub mod basic;
-pub mod basic_member;
 pub mod sudo;
 
 use serenity::{framework::standard::{Args, macros::help, help_commands, CommandResult, CommandGroup, HelpOptions}, model::prelude::*, prelude::*};

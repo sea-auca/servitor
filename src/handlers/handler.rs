@@ -32,7 +32,6 @@ impl EventHandler for Handler {
         }
     
         if let Some(guild_id) = add_reaction.guild_id {
-            println!("Foo");
             if let Some(guild) = guild_id.to_guild_cached(&ctx).await {
                 match add_reaction.user_id {
                     Some(user_id) =>  {
