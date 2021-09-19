@@ -1,13 +1,13 @@
 use crate::frameworks::framework;
+use crate::global::shared::LOGGER;
 use crate::handlers::handler;
 use serde::Deserialize;
 use serenity::{
     client::bridge::gateway::GatewayIntents,
-    framework::standard::{HelpCommand, CommandGroup, StandardFramework}
+    framework::standard::{CommandGroup, HelpCommand, StandardFramework},
 };
 use std::fs;
 use toml;
-use crate::global::shared::LOGGER;
 
 #[derive(Debug, Deserialize)]
 pub struct Config {
@@ -34,7 +34,11 @@ pub struct Settings {
 }
 
 impl Settings {
-    pub fn create_settings(path: String, group: &Vec<&'static CommandGroup>, help: &'static HelpCommand) -> Settings {
+    pub fn create_settings(
+        path: String,
+        group: &Vec<&'static CommandGroup>,
+        help: &'static HelpCommand,
+    ) -> Settings {
         let config = Config::from_toml(path);
         let mut framework = framework::create_framework("~").help(help);
         for g in group {
@@ -42,7 +46,7 @@ impl Settings {
         }
         {
             LOGGER.lock().unwrap().configure_logger("logs/bot.log");
-        }    
+        }
         let intents = GatewayIntents::all();
         let handler = handler::Handler;
         Settings {
