@@ -1,5 +1,5 @@
 use crate::frameworks::framework;
-use crate::global::shared::LOGGER;
+use crate::global::shared::{LOGGER, BOT_DATABASE};
 use crate::handlers::handler;
 use serde::Deserialize;
 use serenity::{
@@ -12,6 +12,7 @@ use toml;
 #[derive(Debug, Deserialize)]
 pub struct Config {
     token: String,
+    database: String,
 }
 
 impl Config {
@@ -23,6 +24,9 @@ impl Config {
     }
     pub fn get_token(&self) -> &String {
         &self.token
+    }
+    pub fn get_database(&self) -> &String {
+        &self.database
     }
 }
 
@@ -46,6 +50,7 @@ impl Settings {
         }
         {
             LOGGER.lock().unwrap().configure_logger("logs/bot.log");
+            BOT_DATABASE.lock().unwrap().configure(&config.get_database());
         }
         let intents = GatewayIntents::all();
         let handler = handler::Handler;
