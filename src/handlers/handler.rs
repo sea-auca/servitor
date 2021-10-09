@@ -30,10 +30,10 @@ impl EventHandler for Handler {
         let msg_id = add_reaction.message_id.0;
         let mut role_id = String::new();
         if let ReactionType::Custom{animated:_animation, id: emoji_id, name: _name} = add_reaction.emoji {
-            BOT_DATABASE.lock().unwrap().get_role_id(msg_id,emoji_id.0,&mut role_id);
+            BOT_DATABASE.lock().unwrap().get_role_id(msg_id, &(emoji_id.0.to_string()),&mut role_id);
         }
-        else {
-            return
+        else if let ReactionType::Unicode(foo) = add_reaction.emoji{
+            BOT_DATABASE.lock().unwrap().get_role_id(msg_id, &foo, &mut role_id);
         }
         if role_id == "No role" {
             return
@@ -46,16 +46,19 @@ impl EventHandler for Handler {
                         if let Ok(mut member) = guild.member(&ctx, &user_id).await {
                         match member.add_role(&ctx, RoleId(role)).await {
                             Ok(_) => {
-                                println!("Added basic member role");
+                                LOGGER.lock().unwrap()
+                                    .write_log(format!("Given role {} to user {}", role, member.user.name), Level::Trace);
                             }
-                            Err(err) => {
-                                println!("Error ocurred: {:#?}", err);
+                            Err(_) => {
+                                LOGGER.lock().unwrap()
+                                    .write_log(format!("Error giving role {} to user {}", role, member.user.name), Level::Warning);
                             }
                         };
                     }
                     }
                     None => {
-                        println!("No user id!");
+                        LOGGER.lock().unwrap()
+                            .write_log(format!("No user id provided in reaction"), Level::Trace);
                     }
                 }
             }
