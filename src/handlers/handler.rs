@@ -35,6 +35,9 @@ impl EventHandler for Handler {
         else {
             return
         }
+        if role_id == "No role" {
+            return
+        }
         let role = role_id.parse::<u64>().unwrap();
         if let Some(guild_id) = add_reaction.guild_id {
             if let Some(guild) = guild_id.to_guild_cached(&ctx).await {
