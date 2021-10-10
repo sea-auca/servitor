@@ -1,14 +1,13 @@
-
-use std::{fs, fmt, io::Write, io::Read};
 use chrono;
+use std::{fmt, fs, io::Read, io::Write};
 
 #[derive(Debug)]
 pub enum Level {
     Debug,
-    Warning, 
+    Warning,
     Error,
     Trace,
-    Info
+    Info,
 }
 
 impl fmt::Display for Level {
@@ -22,19 +21,29 @@ impl fmt::Display for Level {
     }
 }
 
-
 pub struct Logger {
     path: String,
-    file: Option<fs::File>  
+    file: Option<fs::File>,
 }
 
 impl Logger {
     pub fn new() -> Logger {
-        Logger {path: String::new(), file: None}
+        Logger {
+            path: String::new(),
+            file: None,
+        }
     }
     pub fn configure_logger(&mut self, path: &str) {
         self.path = String::from(path);
-        self.file = Some(fs::OpenOptions::new().read(true).write(true).truncate(true).create(true).open(path).expect("Error creating or opening log file"));
+        self.file = Some(
+            fs::OpenOptions::new()
+                .read(true)
+                .write(true)
+                .truncate(true)
+                .create(true)
+                .open(path)
+                .expect("Error creating or opening log file"),
+        );
     }
     pub fn write_log(&mut self, text: String, level: Level) {
         if let None = self.file {
@@ -45,15 +54,28 @@ impl Logger {
         let datetime = chrono::Utc::now();
         let level_string = level.to_string().to_uppercase();
         let message = format!("{}\t[{}]\t{}\n", datetime, level_string, text);
-        file.write_all(message.as_bytes()).expect("Error writing log entry");
+        file.write_all(message.as_bytes())
+            .expect("Error writing log entry");
     }
     pub fn extract_entries(&mut self, amount: usize) -> String {
         if let None = self.file {
             return String::from("No log file!");
         }
-        let mut contents = String::new();  
-        self.file = Some(fs::OpenOptions::new().read(true).write(true).truncate(false).create(true).open(self.path.as_str()).expect("Error creating or opening log file"));      
-        self.file.as_ref().unwrap().read_to_string(&mut contents).unwrap();
+        let mut contents = String::new();
+        self.file = Some(
+            fs::OpenOptions::new()
+                .read(true)
+                .write(true)
+                .truncate(false)
+                .create(true)
+                .open(self.path.as_str())
+                .expect("Error creating or opening log file"),
+        );
+        self.file
+            .as_ref()
+            .unwrap()
+            .read_to_string(&mut contents)
+            .unwrap();
         let mut split = contents.split("\n");
         let mut result = String::new();
         for _i in 0..amount {

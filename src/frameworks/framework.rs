@@ -1,15 +1,14 @@
+use crate::global::shared::LOGGER;
+use crate::utilities::logging::Level;
 use serenity::{
+    client::Context,
     framework::standard::{macros::hook, CommandResult, StandardFramework},
     model::{
         channel::{Message, ReactionType},
         id::{EmojiId, UserId},
     },
-    client::Context
 };
-use std::{collections::HashSet};
-use crate::global::shared::LOGGER;
-use crate::utilities::logging::Level;
-
+use std::collections::HashSet;
 
 pub fn create_framework(prefix: &str) -> StandardFramework {
     let mut owners: HashSet<UserId> = HashSet::new();
@@ -24,11 +23,17 @@ pub fn create_framework(prefix: &str) -> StandardFramework {
 
 #[hook]
 async fn before(_ctx: &Context, msg: &Message, command_name: &str) -> bool {
-   // if msg.author.bot {
-   //     return false;
-   // }
-    
-    LOGGER.lock().unwrap().write_log(format!("Got command '{}' by user '{}'",command_name, msg.author.name), Level::Trace);
+    // if msg.author.bot {
+    //     return false;
+    // }
+
+    LOGGER.lock().unwrap().write_log(
+        format!(
+            "Got command '{}' by user '{}'",
+            command_name, msg.author.name
+        ),
+        Level::Trace,
+    );
     true
 }
 
@@ -36,17 +41,26 @@ async fn before(_ctx: &Context, msg: &Message, command_name: &str) -> bool {
 async fn after(_ctx: &Context, _msg: &Message, command_name: &str, command_result: CommandResult) {
     match command_result {
         Ok(()) => {
-            LOGGER.lock().unwrap().write_log(format!("Processed command '{}'", command_name), Level::Trace);
+            LOGGER.lock().unwrap().write_log(
+                format!("Processed command '{}'", command_name),
+                Level::Trace,
+            );
         }
         Err(why) => {
-            LOGGER.lock().unwrap().write_log(format!("Command '{}' returned error {:?}.", command_name, why), Level::Warning);
+            LOGGER.lock().unwrap().write_log(
+                format!("Command '{}' returned error {:?}.", command_name, why),
+                Level::Warning,
+            );
         }
     }
 }
 
 #[hook]
 async fn normal_message(ctx: &Context, msg: &Message) {
-    LOGGER.lock().unwrap().write_log(format!("Received message from user {}", msg.author.name), Level::Trace);
+    LOGGER.lock().unwrap().write_log(
+        format!("Received message from user {}", msg.author.name),
+        Level::Trace,
+    );
     if msg.content.contains("Яман") || msg.content.contains("яман") {
         let reaction_type = ReactionType::Custom {
             animated: false,
@@ -54,12 +68,16 @@ async fn normal_message(ctx: &Context, msg: &Message) {
             name: Some(String::from(":shit_taster:")),
         };
         if let Err(why) = msg.react(&ctx, reaction_type).await {
-            LOGGER.lock().unwrap().write_log(format!("Error adding reaction {:?}", why), Level::Warning);
+            LOGGER
+                .lock()
+                .unwrap()
+                .write_log(format!("Error adding reaction {:?}", why), Level::Warning);
         }
-        if let Err(why) = msg.channel_id.say(&ctx.http, "Курлык-курлык!").await {            
-            LOGGER.lock().unwrap().write_log(format!("Error sending message {:?}", why), Level::Warning);
+        if let Err(why) = msg.channel_id.say(&ctx.http, "Курлык-курлык!").await {
+            LOGGER
+                .lock()
+                .unwrap()
+                .write_log(format!("Error sending message {:?}", why), Level::Warning);
         }
     }
 }
-
-

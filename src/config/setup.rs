@@ -1,5 +1,5 @@
 use crate::frameworks::framework;
-use crate::global::shared::{LOGGER, BOT_DATABASE};
+use crate::global::shared::{BOT_DATABASE, LOGGER};
 use crate::handlers::handler;
 use serde::Deserialize;
 use serenity::{
@@ -50,7 +50,10 @@ impl Settings {
         }
         {
             LOGGER.lock().unwrap().configure_logger("logs/bot.log");
-            BOT_DATABASE.lock().unwrap().configure(&config.get_database());
+            BOT_DATABASE
+                .lock()
+                .unwrap()
+                .configure(&config.get_database());
         }
         let intents = GatewayIntents::all();
         let handler = handler::Handler;

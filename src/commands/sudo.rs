@@ -1,7 +1,7 @@
-use serenity::framework::standard::{macros::command, macros::group, CommandResult, Args};
+use crate::global::shared::{BOT_DATABASE, LOGGER};
+use serenity::framework::standard::{macros::command, macros::group, Args, CommandResult};
 use serenity::model::{guild, id, prelude::*, user::*};
 use serenity::prelude::*;
-use crate::global::shared::{LOGGER, BOT_DATABASE};
 
 #[group]
 #[owners_only]
@@ -23,7 +23,6 @@ async fn retrieve_logs(ctx: &Context, msg: &Message, mut args: Args) -> CommandR
     Ok(())
 }
 
-
 #[command]
 #[num_args(3)]
 #[usage("message_id emoji_id role_id")]
@@ -31,7 +30,10 @@ async fn add_reaction_role(ctx: &Context, msg: &Message, mut args: Args) -> Comm
     let msg_id = args.single::<String>()?;
     let emoji_id = args.single::<String>()?;
     let role_id = args.single::<String>()?;
-    BOT_DATABASE.lock().unwrap().add_reaction_role(msg_id, emoji_id, role_id);
+    BOT_DATABASE
+        .lock()
+        .unwrap()
+        .add_reaction_role(msg_id, emoji_id, role_id);
     msg.channel_id.say(&ctx.http, "Ok").await?;
     Ok(())
 }
