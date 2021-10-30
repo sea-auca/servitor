@@ -7,8 +7,9 @@ use serenity::{
         event::ResumedEvent,
         gateway::Ready,
         guild::Member,
-        id::{MessageId, RoleId}, //id::EmojiId,
+        id::{MessageId, RoleId, GuildId, ChannelId}, //id::EmojiId,
     },
+    utils::MessageBuilder,
     prelude::*,
 };
 
@@ -28,6 +29,27 @@ impl EventHandler for Handler {
             .lock()
             .unwrap()
             .write_log(format!("Resumed!"), Level::Info);
+    }
+    
+    async fn guild_member_addition(&self, ctx: Context, _guild_id: GuildId, new_member: Member) {
+        let general_channel_id = ChannelId(882988311138959430);
+        let greeting = MessageBuilder::new()
+            .push("Hello, ")
+            .mention(&new_member)
+            .push("! Please familiarize yourself with #rules and #announcements")
+            .build();
+        if let Err(why) = general_channel_id.say(&ctx.http, &greeting).await {
+            LOGGER
+                .lock()
+                .unwrap()
+                .write_log(format!("Error: {}", why), Level::Warning);
+            return
+        }
+        LOGGER
+            .lock()
+            .unwrap()
+            .write_log(format!("Send greetings to user {}", new_member.user.name), Level::Trace);    
+        
     }
 
     //welp we will do it in appropritate way later

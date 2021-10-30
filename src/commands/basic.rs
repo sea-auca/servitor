@@ -1,5 +1,5 @@
 use crate::global::shared::BOT_DATABASE;
-use serenity::framework::standard::{macros::command, macros::group, CommandResult};
+use serenity::framework::standard::{macros::command, macros::group, CommandResult, Args};
 use serenity::model::prelude::*;
 use serenity::prelude::*;
 use std::process::Command;
@@ -23,8 +23,8 @@ async fn ping(ctx: &Context, msg: &Message) -> CommandResult {
 #[min_args(1)]
 #[description("Returns arguments provided to function.")]
 #[usage("[args]")]
-async fn echo(ctx: &Context, msg: &Message) -> CommandResult {
-    msg.channel_id.say(&ctx.http, &msg.content).await?;
+async fn echo(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
+    msg.channel_id.say(&ctx.http, args.message()).await?;
     Ok(())
 }
 

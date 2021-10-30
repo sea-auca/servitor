@@ -13,6 +13,7 @@ use toml;
 pub struct Config {
     token: String,
     database: String,
+    logfile: String
 }
 
 impl Config {
@@ -27,6 +28,9 @@ impl Config {
     }
     pub fn get_database(&self) -> &String {
         &self.database
+    }
+    pub fn get_logfile(&self) -> &String {
+        &self.logfile
     }
 }
 
@@ -49,7 +53,7 @@ impl Settings {
             framework.group_add(g);
         }
         {
-            LOGGER.lock().unwrap().configure_logger("logs/bot.log");
+            LOGGER.lock().unwrap().configure_logger(&config.get_logfile());
             BOT_DATABASE
                 .lock()
                 .unwrap()

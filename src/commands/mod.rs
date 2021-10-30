@@ -25,6 +25,17 @@ async fn help(
     groups: &[&'static CommandGroup],
     owners: HashSet<UserId>,
 ) -> CommandResult {
-    let _ = help_commands::with_embeds(context, msg, args, help_options, groups, owners).await;
+    let mut msg_clone = msg.clone();
+    let dm = msg_clone.author.create_dm_channel(&context.http).await;
+    match dm {
+        Ok(dm) => {
+            msg_clone.channel_id = dm.id;
+            let _ = help_commands::with_embeds(context, &msg_clone, args, help_options, groups, owners).await; 
+        }
+        Err(_) => {
+            let _ = help_commands::with_embeds(context, msg, args, help_options, groups, owners).await;
+        }
+    }
+    
     Ok(())
 }
