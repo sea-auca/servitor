@@ -1,5 +1,6 @@
 pub mod basic;
 pub mod sudo;
+pub mod repl;
 
 use serenity::{
     framework::standard::{

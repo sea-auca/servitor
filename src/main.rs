@@ -7,6 +7,7 @@ mod utilities;
 
 use commands::basic::GENERAL_GROUP;
 use commands::sudo::SUDO_GROUP;
+use commands::repl::REPL_GROUP;
 use commands::HELP;
 use config::setup;
 use global::shared::LOGGER;
@@ -47,7 +48,7 @@ async fn main() {
     }    
     let settings = setup::Settings::create_settings(
         config_path,
-        &vec![&GENERAL_GROUP, &SUDO_GROUP],
+        &vec![&GENERAL_GROUP, &SUDO_GROUP, &REPL_GROUP],
         &HELP,
     );
     let mut client = Client::builder(settings.config.get_token())
