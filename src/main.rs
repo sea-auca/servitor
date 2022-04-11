@@ -15,7 +15,6 @@ use serenity::prelude::*;
 use utilities::logging;
 use std::env;
 
-const DEFAULT_PATH: &str = "data/Config.toml";
 const USAGE_MESSAGE: &str = "Usage:
     \n\tservitor <SUBCOMMAND>
     \n\tSUBCOMMANDS:
@@ -27,27 +26,12 @@ const USAGE_MESSAGE: &str = "Usage:
 #[tokio::main]
 async fn main() { 
     let args: Vec<String> = env::args().collect();
-    let mut config_path = String::new();
     let length = args.len();
-    if length == 1 {
-        println!("No args provided, defaulting to standart config path: {}", DEFAULT_PATH);
-        config_path = String::from(DEFAULT_PATH);
-    }
-    else {
-        if args[1] == "help" {
+    if length == 2 && args[1] == "help" {
             println!("{}", USAGE_MESSAGE);
             return;
-        }
-        else if args[1] == "config" && length == 2 {
-            config_path = args[2].clone();
-        }
-        else {
-            println!("Wrong arguments provided. Use servitor help for usage");
-            return;
-        }
     }    
     let settings = setup::Settings::create_settings(
-        config_path,
         &vec![&GENERAL_GROUP, &SUDO_GROUP, &REPL_GROUP],
         &HELP,
     );
