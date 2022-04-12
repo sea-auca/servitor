@@ -1,5 +1,7 @@
+//! A set of commands used within the bot
 pub mod basic;
 pub mod sudo;
+pub mod repl;
 
 use serenity::{
     framework::standard::{

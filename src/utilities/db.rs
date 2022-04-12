@@ -1,94 +1,104 @@
+//! Client for connecting and interacting with database.
 use crate::global::shared::LOGGER;
 use crate::logging::Level;
-use rusqlite::Connection;
+use tokio_postgres::{Client, NoTls};
 
-pub struct Client {
-    path: String,
-    connection: Option<Connection>,
+/// A wrapper struct around [`tokio_postgres::Client`].
+/// 
+/// This is used to establish connection with a PostgreSQL database and query bot's data.  
+/// It is intended that struct is used as singleton in [`global::shared`](crate::global::shared)
+/// and configured at startup within [`config::setup::Settings`](crate::config::setup::Settings), 
+/// however, it is not necessary to do so. 
+/// One should note, though, that current version of bot requires existence of configured instance of database client 
+/// in [`global::shared`](crate::global::shared). 
+pub struct DatabaseClient {
+    params: String,
+   // connection: Option<Connection<tokio_postgres::Socket, tokio_postgres::tls::NoTlsStream>>,
+    client: Option<Client>
 }
 
-impl Client {
-    pub fn new() -> Client {
-        Client {
-            path: String::new(),
-            connection: None,
+impl DatabaseClient {
+    
+    /// Creates a new database client. 
+    /// [`Self::configure`] should be called before client can be used.
+    pub fn new() -> DatabaseClient {
+        DatabaseClient {
+            params: String::new(),
+           // connection: None,
+            client: None
         }
     }
-
-    pub fn configure(&mut self, path: &str) {
-        self.path = String::from(path);
-        self.connection = Some(Connection::open(path).expect("Error connecting to database"));
+    
+    /// Configures `self` and establishes connection with database. 
+    /// `params` should be of the format: 
+    /// 
+    /// `host = <database host address> user = <database username> password = <database password> dbname = <database name>`
+    /// 
+    /// After configure is called client is ready to be used. 
+    /// 
+    /// # Panics
+    /// 
+    /// This function panics if connection to the PostgreSQL server failed due to some reason
+    pub async fn configure(&mut self, params: &str) {
+        let (client, connection) = tokio_postgres::connect(params, NoTls)
+            .await.unwrap();
+        
+        self.params = String::from(params);
+        self.client = Some(client);
+        //self.connection = Some(connection);
+        tokio::spawn(async move {
+            if let Err(e) = connection.await {
+                panic!("connection error: {}", e);
+            }
+        });
     }
 
-    pub fn get_role_id(&mut self, msg_id: u64, emoji_id: &String, result: &mut String) {
+    pub async fn get_role_id(&mut self, msg_id: u64, emoji_id: &String, result: &mut String) {
         *result = String::from("No role");
-        let query = self.connection.as_ref().unwrap().prepare(
-            "SELECT role_id FROM roles_reactions WHERE msg_id = :msg_id AND emoji_id = :emoji_id",
-        );
-        LOGGER.lock().unwrap().write_log(format!("Prepared select statement"), Level::Debug);
-        match query {
-            Ok(mut query) => {
-                let rows = query.query(&[
-                    (":msg_id", msg_id.to_string().as_str()),
-                    (":emoji_id", emoji_id.as_str()),
-                ]);
-                match rows {
-                    Ok(mut rows) => {
-                        while let Some(row) = rows.next().expect("Error") {
-                            *result = row.get(0).unwrap_or_else(|_err| {
-                                LOGGER
-                                    .lock()
-                                    .unwrap()
-                                    .write_log(format!("Error reading row"), Level::Error);
-                                String::from("No role")
-                            });
-                        }
+        let client = self.client.as_mut().unwrap();
+        
+        let executed = client.query_opt(
+            "SELECT role_id FROM roles_reactions WHERE msg_id = $1 AND emoji_id = $2", 
+            &[&msg_id.to_string().as_str(), &emoji_id.as_str()]).await;
+        match executed {
+            Ok(row) => {
+                match row {
+                    Some(row) => {
+                        *result = row.get("role_id");
                     }
-                    Err(_) => {
-                        LOGGER
-                            .lock()
-                            .unwrap()
-                            .write_log(format!("Error performing select"), Level::Error);
+                    None => {
+                        return
                     }
-                }
+                }    
             }
-            Err(_err) => {
+            Err(err) => {
                 LOGGER
                     .lock()
                     .unwrap()
-                    .write_log(format!("Error preparing select"), Level::Error);
-            }
+                    .write_log(format!("Error executing select statement: {}", err), Level::Error);
+            }   
         }
     }
 
-    pub fn add_reaction_role(&mut self, msg_id: String, emoji_id: String, role_id: String) {
-        let query = self.connection
-            .as_ref().unwrap()
-            .prepare("INSERT INTO roles_reactions (msg_id, emoji_id, role_id) VALUES (:msg_id, :emoji_id, :role_id)");
-        match query {
-            Ok(mut query) => {
-                if let Err(_) = query.insert(&[
-                    (":msg_id", msg_id.as_str()),
-                    (":emoji_id", emoji_id.as_str()),
-                    (":role_id", role_id.as_str()),
-                ]) {
-                    LOGGER.lock().unwrap().write_log(
-                        format!("Error adding role to database"),
-                        Level::Error,
-                    )
-                } else {
-                    LOGGER
-                        .lock()
-                        .unwrap()
-                        .write_log(format!("Successfully added role to database"), Level::Debug)
-                }
-            }
-            Err(_) => {
+    pub async fn add_reaction_role(&mut self, msg_id: String, emoji_id: String, role_id: String) {
+        let client = self.client.as_mut().unwrap();
+        let executed = client.execute(
+            "INSERT INTO roles_reactions (msg_id, emoji_id, role_id) VALUES ($1, $2, $3)", 
+            &[&msg_id.as_str(), &emoji_id.as_str(), &role_id.as_str()]).await;
+        match executed {
+            Ok(count) => {
                 LOGGER
                     .lock()
                     .unwrap()
-                    .write_log(format!("Error prearing insert"), Level::Error);
+                    .write_log(format!("Inserted {} rows", count), Level::Debug);    
             }
+            Err(err) => {
+                LOGGER
+                    .lock()
+                    .unwrap()
+                    .write_log(format!("Error executing insert statement: {}", err), Level::Error);
+            }   
         }
+        
     }
 }

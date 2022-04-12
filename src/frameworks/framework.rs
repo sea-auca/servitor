@@ -1,3 +1,4 @@
+//! Implementation of standard framework for the bot.
 use crate::global::shared::LOGGER;
 use crate::utilities::logging::Level;
 use serenity::{

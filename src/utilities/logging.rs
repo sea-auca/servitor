@@ -1,6 +1,8 @@
+//! Module responsible for writing the log messages.
 use chrono;
 use std::{fmt, fs, io::Read, io::Write};
 
+/// Logging level indicates the importance of log message. 
 #[derive(Debug)]
 pub enum Level {
     Debug,
@@ -21,6 +23,11 @@ impl fmt::Display for Level {
     }
 }
 
+/// The logger is struct providing an interface to write log messages. 
+/// 
+/// It is intended that logger is used as a singleton It is intended that struct is used as singleton in [`global::shared`](crate::global::shared)
+/// It is possible to use two or more instances of logger provided that at least one is implemented as shared static in [`global::shared`](crate::global::shared)
+/// For safety reasons multiple instance of logger should use different logfiles.
 pub struct Logger {
     path: String,
     file: Option<fs::File>,
