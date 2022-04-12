@@ -1,8 +1,16 @@
+//! Client for connecting and interacting with database.
 use crate::global::shared::LOGGER;
 use crate::logging::Level;
-use tokio_postgres::{Client, Connection, NoTls};
+use tokio_postgres::{Client, NoTls};
 
-
+/// A wrapper struct around [`tokio_postgres::Client`].
+/// 
+/// This is used to establish connection with a PostgreSQL database and query bot's data.  
+/// It is intended that struct is used as singleton in [`global::shared`](crate::global::shared)
+/// and configured at startup within [`config::setup::Settings`](crate::config::setup::Settings), 
+/// however, it is not necessary to do so. 
+/// One should note, though, that current version of bot requires existence of configured instance of database client 
+/// in [`global::shared`](crate::global::shared). 
 pub struct DatabaseClient {
     params: String,
    // connection: Option<Connection<tokio_postgres::Socket, tokio_postgres::tls::NoTlsStream>>,
@@ -10,6 +18,9 @@ pub struct DatabaseClient {
 }
 
 impl DatabaseClient {
+    
+    /// Creates a new database client. 
+    /// [`Self::configure`] should be called before client can be used.
     pub fn new() -> DatabaseClient {
         DatabaseClient {
             params: String::new(),
@@ -17,7 +28,17 @@ impl DatabaseClient {
             client: None
         }
     }
-
+    
+    /// Configures `self` and establishes connection with database. 
+    /// `params` should be of the format: 
+    /// 
+    /// `host = <database host address> user = <database username> password = <database password> dbname = <database name>`
+    /// 
+    /// After configure is called client is ready to be used. 
+    /// 
+    /// # Panics
+    /// 
+    /// This function panics if connection to the PostgreSQL server failed due to some reason
     pub async fn configure(&mut self, params: &str) {
         let (client, connection) = tokio_postgres::connect(params, NoTls)
             .await.unwrap();

@@ -1,3 +1,6 @@
+//! # servitor
+//! 
+//! `servitor` is a Discord bot helping to manage SEA Server.
 mod commands;
 mod config;
 mod frameworks;
@@ -13,24 +16,9 @@ use config::setup;
 use global::shared::LOGGER;
 use serenity::prelude::*;
 use utilities::logging;
-use std::env;
-
-const USAGE_MESSAGE: &str = "Usage:
-    \n\tservitor <SUBCOMMAND>
-    \n\tSUBCOMMANDS:
-    \n\t\thelp:\t Display this message and leave
-    \n\t\tconfig <FILEPATH>:\t Set config file of bot to FILEPATH. Defaults to \"data/Config.toml\"
-    \n\t\tRunning without argument is equivalent to 'servitor config data/Config.toml";
-
 
 #[tokio::main]
-async fn main() { 
-    let args: Vec<String> = env::args().collect();
-    let length = args.len();
-    if length == 2 && args[1] == "help" {
-            println!("{}", USAGE_MESSAGE);
-            return;
-    }    
+async fn main() {  
     let settings = setup::Settings::create_settings(
         &vec![&GENERAL_GROUP, &SUDO_GROUP, &REPL_GROUP],
         &HELP,

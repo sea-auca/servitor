@@ -1,3 +1,4 @@
+//! Implementation of default handler for the bot.
 use crate::global::shared::{BOT_DATABASE, LOGGER};
 use crate::logging::Level;
 use serenity::{

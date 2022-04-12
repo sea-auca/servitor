@@ -1,3 +1,4 @@
+//! Stores object that are shared between modules and are intented to be singletons.
 use crate::utilities::{db, logging};
 use lazy_static::lazy_static;
 use std::sync::Mutex;
