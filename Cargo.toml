@@ -8,10 +8,9 @@ edition = "2018"
 [dependencies]
 serenity = {version = "0.10", default-features = false, features = ["client", "gateway", "rustls_backend", "model", "standard_framework", "framework", "cache"] }
 tokio = { version = "1.11.0", features = ["macros", "rt-multi-thread"] }
-toml = "0.5"
 serde = "1.0"
 chrono = "0.4"
 lazy_static = "1.4.0"
-rusqlite = {version = "0.26.0", features = ["bundled"]}
 envy = "0.4.2"
-postgres = "0.19.2"
+tokio-postgres = "0.7.5"
+futures = "0.3.21"

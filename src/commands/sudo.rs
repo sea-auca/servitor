@@ -34,8 +34,9 @@ async fn add_reaction_role(ctx: &Context, msg: &Message, mut args: Args) -> Comm
     let role_id = args.single::<String>()?;
     BOT_DATABASE
         .lock()
-        .unwrap()
-        .add_reaction_role(msg_id, emoji_id, role_id);
+        .await
+        .add_reaction_role(msg_id, emoji_id, role_id)
+        .await;
     msg.channel_id.say(&ctx.http, "Ok").await?;
     Ok(())
 }

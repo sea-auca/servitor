@@ -53,7 +53,7 @@ pub struct Settings {
 }
 
 impl Settings {
-    pub fn create_settings(
+    pub async fn create_settings(
         group: &Vec<&'static CommandGroup>,
         help: &'static HelpCommand,
     ) -> Settings {
@@ -66,8 +66,8 @@ impl Settings {
             LOGGER.lock().unwrap().configure_logger(&config.get_logfile());
             BOT_DATABASE
                 .lock()
-                .unwrap()
-                .configure(&config.get_database_conf());
+                .await
+                .configure(&config.get_database_conf()).await;
         }
         let intents = GatewayIntents::all();
         let handler = handler::Handler;

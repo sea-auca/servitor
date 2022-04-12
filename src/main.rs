@@ -34,7 +34,7 @@ async fn main() {
     let settings = setup::Settings::create_settings(
         &vec![&GENERAL_GROUP, &SUDO_GROUP, &REPL_GROUP],
         &HELP,
-    );
+    ).await;
     let mut client = Client::builder(settings.config.get_token())
         .intents(settings.intents)
         .framework(settings.framework)

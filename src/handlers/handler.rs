@@ -62,16 +62,16 @@ impl EventHandler for Handler {
             name: _name,
         } = add_reaction.emoji
         {
-            BOT_DATABASE.lock().unwrap().get_role_id(
+            BOT_DATABASE.lock().await.get_role_id(
                 msg_id,
                 &(emoji_id.0.to_string()),
                 &mut role_id,
-            );
+            ).await;
         } else if let ReactionType::Unicode(foo) = add_reaction.emoji {
             BOT_DATABASE
                 .lock()
-                .unwrap()
-                .get_role_id(msg_id, &foo, &mut role_id);
+                .await
+                .get_role_id(msg_id, &foo, &mut role_id).await;
         }
         if role_id == "No role" {
             return;
