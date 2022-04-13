@@ -21,15 +21,15 @@ impl EventHandler for Handler {
     async fn ready(&self, _: Context, ready: Ready) {
         LOGGER
             .lock()
-            .unwrap()
-            .write_log(format!("Connected as {}", ready.user.name), Level::Info);
+            .await
+            .write_log(format!("Connected as {}", ready.user.name), Level::Info).await;
     }
 
     async fn resume(&self, _: Context, _: ResumedEvent) {
         LOGGER
             .lock()
-            .unwrap()
-            .write_log(format!("Resumed!"), Level::Info);
+            .await
+            .write_log(format!("Resumed!"), Level::Info).await;
     }
     
     async fn guild_member_addition(&self, ctx: Context, _guild_id: GuildId, new_member: Member) {
@@ -42,14 +42,14 @@ impl EventHandler for Handler {
         if let Err(why) = general_channel_id.say(&ctx.http, &greeting).await {
             LOGGER
                 .lock()
-                .unwrap()
-                .write_log(format!("Error: {}", why), Level::Warning);
+                .await
+                .write_log(format!("Error: {}", why), Level::Warning).await;
             return
         }
         LOGGER
             .lock()
-            .unwrap()
-            .write_log(format!("Send greetings to user {}", new_member.user.name), Level::Trace);    
+            .await
+            .write_log(format!("Send greetings to user {}", new_member.user.name), Level::Trace).await;    
         
     }
 
@@ -85,19 +85,19 @@ impl EventHandler for Handler {
                         if let Ok(mut member) = guild.member(&ctx, &user_id).await {
                             match member.add_role(&ctx, RoleId(role)).await {
                                 Ok(_) => {
-                                    LOGGER.lock().unwrap().write_log(
+                                    LOGGER.lock().await.write_log(
                                         format!("Given role {} to user {}", role, member.user.name),
                                         Level::Trace,
-                                    );
+                                    ).await;
                                 }
                                 Err(_) => {
-                                    LOGGER.lock().unwrap().write_log(
+                                    LOGGER.lock().await.write_log(
                                         format!(
                                             "Error giving role {} to user {}",
                                             role, member.user.name
                                         ),
                                         Level::Warning,
-                                    );
+                                    ).await;
                                 }
                             };
                         }
@@ -105,8 +105,9 @@ impl EventHandler for Handler {
                     None => {
                         LOGGER
                             .lock()
-                            .unwrap()
-                            .write_log(format!("No user id provided in reaction"), Level::Trace);
+                            .await
+                            .write_log(format!("No user id provided in reaction"), Level::Trace)
+                            .await;
                     }
                 }
             }

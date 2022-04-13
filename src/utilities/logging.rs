@@ -1,6 +1,7 @@
 //! Module responsible for writing the log messages.
 use chrono;
-use std::{fmt, fs, io::Read, io::Write};
+use std::{fmt, io::Read, io::Write};
+use tokio::{fs, io::{AsyncWriteExt, AsyncReadExt}};
 
 /// Logging level indicates the importance of log message. 
 #[derive(Debug)]
@@ -31,6 +32,8 @@ impl fmt::Display for Level {
 pub struct Logger {
     path: String,
     file: Option<fs::File>,
+    bytes_written: usize,
+    max_bytes: usize
 }
 
 impl Logger {
@@ -38,9 +41,11 @@ impl Logger {
         Logger {
             path: String::new(),
             file: None,
+            bytes_written: 0,
+            max_bytes: 0 as usize + 1
         }
     }
-    pub fn configure_logger(&mut self, path: &str) {
+    pub async fn configure_logger(&mut self, path: &str) {
         self.path = String::from(path);
         self.file = Some(
             fs::OpenOptions::new()
@@ -49,22 +54,27 @@ impl Logger {
                 .truncate(true)
                 .create(true)
                 .open(path)
+                .await
                 .expect("Error creating or opening log file"),
         );
     }
-    pub fn write_log(&mut self, text: String, level: Level) {
+    pub async fn write_log(&mut self, text: String, level: Level) {
         if let None = self.file {
             println!("No log file!");
             return;
         }
-        let mut file = self.file.as_ref().unwrap();
+        let file = self.file.as_mut().unwrap();
         let datetime = chrono::Utc::now();
         let level_string = level.to_string().to_uppercase();
         let message = format!("{}\t[{}]\t{}\n", datetime, level_string, text);
-        file.write_all(message.as_bytes())
+        let bytes_len = message.len();
+        file.write_all(message.as_bytes()).await
             .expect("Error writing log entry");
+        file.sync_all().await.expect("Error syncronising logfile metadata"); 
+        self.bytes_written += bytes_len;
+        self.rotate_on_overflow().await;   
     }
-    pub fn extract_entries(&mut self, amount: usize) -> String {
+    pub async fn extract_entries(&mut self, amount: usize) -> String {
         if let None = self.file {
             return String::from("No log file!");
         }
@@ -76,13 +86,17 @@ impl Logger {
                 .truncate(false)
                 .create(true)
                 .open(self.path.as_str())
+                .await
                 .expect("Error creating or opening log file"),
         );
         self.file
-            .as_ref()
+            .as_mut()
             .unwrap()
             .read_to_string(&mut contents)
+            .await
             .unwrap();
+        
+        self.file.as_mut().unwrap().sync_all().await.expect("Error syncronising logfile metadata");    
         let mut split = contents.split("\n");
         let mut result = String::new();
         for _i in 0..amount {
@@ -94,5 +108,39 @@ impl Logger {
             result = format!("{}\n{}", result, line_string)
         }
         result
+    }
+    
+    /// Updates logfile if `self.bytes_written >= max_bytes`.
+    /// Rotation is perfomed by renaming current logfile from
+    /// `self.path` to `self.path.<UNIX_TIME>
+    /// and creating new logfile instead of rotated one.
+    /// As for current version no compression is performed for rotated files
+    /// and should be handled separately. 
+    async fn rotate_on_overflow(&mut self)
+    {
+        if self.bytes_written < self.max_bytes {
+            return
+        }
+        let timestamp = chrono::Utc::now().timestamp();
+        let new_path = format!("{}.{}", self.path.clone(), timestamp);
+        let result = fs::rename(self.path.clone(), new_path).await;
+        match result {
+            Ok(()) => {
+                self.file = Some(
+                    fs::OpenOptions::new()
+                        .read(true)
+                        .write(true)
+                        .truncate(true)
+                        .create(true)
+                        .open(self.path.clone())
+                        .await
+                        .expect("Error creating or opening log file"),
+                );
+            }  
+            Err(err) => {
+                println!("{}", err);
+                return
+            }
+        };
     }
 }

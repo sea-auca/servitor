@@ -28,13 +28,17 @@ async fn before(_ctx: &Context, msg: &Message, command_name: &str) -> bool {
     //     return false;
     // }
 
-    LOGGER.lock().unwrap().write_log(
-        format!(
-            "Got command '{}' by user '{}'",
-            command_name, msg.author.name
-        ),
-        Level::Trace,
-    );
+    LOGGER
+        .lock()
+        .await.
+        write_log(
+            format!(
+                "Got command '{}' by user '{}'",
+                command_name, msg.author.name
+            ),
+            Level::Trace,
+        )
+        .await;
     true
 }
 
@@ -42,26 +46,38 @@ async fn before(_ctx: &Context, msg: &Message, command_name: &str) -> bool {
 async fn after(_ctx: &Context, _msg: &Message, command_name: &str, command_result: CommandResult) {
     match command_result {
         Ok(()) => {
-            LOGGER.lock().unwrap().write_log(
-                format!("Processed command '{}'", command_name),
-                Level::Trace,
-            );
+            LOGGER
+                .lock()
+                .await
+                .write_log(
+                    format!("Processed command '{}'", command_name),
+                    Level::Trace,
+                )
+                .await;
         }
         Err(why) => {
-            LOGGER.lock().unwrap().write_log(
-                format!("Command '{}' returned error {:?}.", command_name, why),
-                Level::Warning,
-            );
+            LOGGER.
+                lock().
+                await.
+                write_log(
+                    format!("Command '{}' returned error {:?}.", command_name, why),
+                    Level::Warning,
+                )
+                .await;
         }
     }
 }
 
 #[hook]
 async fn normal_message(ctx: &Context, msg: &Message) {
-    LOGGER.lock().unwrap().write_log(
-        format!("Received message from user {}", msg.author.name),
-        Level::Trace,
-    );
+    LOGGER
+        .lock()
+        .await
+        .write_log(
+            format!("Received message from user {}", msg.author.name),
+            Level::Trace,
+        )
+        .await;
     if msg.content.contains("Яман") || msg.content.contains("яман") {
         let reaction_type = ReactionType::Custom {
             animated: false,
@@ -71,14 +87,16 @@ async fn normal_message(ctx: &Context, msg: &Message) {
         if let Err(why) = msg.react(&ctx, reaction_type).await {
             LOGGER
                 .lock()
-                .unwrap()
-                .write_log(format!("Error adding reaction {:?}", why), Level::Warning);
+                .await
+                .write_log(format!("Error adding reaction {:?}", why), Level::Warning)
+                .await;
         }
         if let Err(why) = msg.channel_id.say(&ctx.http, "Курлык-курлык!").await {
             LOGGER
                 .lock()
-                .unwrap()
-                .write_log(format!("Error sending message {:?}", why), Level::Warning);
+                .await
+                .write_log(format!("Error sending message {:?}", why), Level::Warning)
+                .await;
         }
     }
 }

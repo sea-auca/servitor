@@ -91,7 +91,11 @@ impl Settings {
             framework.group_add(g);
         }
         {
-            LOGGER.lock().unwrap().configure_logger(&config.get_logfile());
+            LOGGER
+                .lock()
+                .await
+                .configure_logger(&config.get_logfile())
+                .await;
             BOT_DATABASE
                 .lock()
                 .await

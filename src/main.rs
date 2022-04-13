@@ -32,7 +32,8 @@ async fn main() {
     if let Err(why) = client.start().await {
         LOGGER
             .lock()
-            .unwrap()
-            .write_log(format!("Client error: {:?}\n", why), logging::Level::Error);
+            .await
+            .write_log(format!("Client error: {:?}\n", why), logging::Level::Error)
+            .await;
     }
 }
