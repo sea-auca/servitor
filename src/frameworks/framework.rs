@@ -69,7 +69,7 @@ async fn after(_ctx: &Context, _msg: &Message, command_name: &str, command_resul
 }
 
 #[hook]
-async fn normal_message(ctx: &Context, msg: &Message) {
+async fn normal_message(_ctx: &Context, msg: &Message) {
     LOGGER
         .lock()
         .await
@@ -78,25 +78,4 @@ async fn normal_message(ctx: &Context, msg: &Message) {
             Level::Trace,
         )
         .await;
-    if msg.content.contains("Яман") || msg.content.contains("яман") {
-        let reaction_type = ReactionType::Custom {
-            animated: false,
-            id: EmojiId(798454339134816256),
-            name: Some(String::from(":shit_taster:")),
-        };
-        if let Err(why) = msg.react(&ctx, reaction_type).await {
-            LOGGER
-                .lock()
-                .await
-                .write_log(format!("Error adding reaction {:?}", why), Level::Warning)
-                .await;
-        }
-        if let Err(why) = msg.channel_id.say(&ctx.http, "Курлык-курлык!").await {
-            LOGGER
-                .lock()
-                .await
-                .write_log(format!("Error sending message {:?}", why), Level::Warning)
-                .await;
-        }
-    }
 }

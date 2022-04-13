@@ -2,7 +2,7 @@ use crate::global::shared::{BOT_DATABASE, LOGGER};
 use serenity::framework::standard::{macros::command, macros::group, Args, CommandResult};
 use serenity::model::{guild, id, prelude::*, user::*, channel::GuildChannel};
 use serenity::prelude::*;
-use serenity::builder::GetMessages;
+use serenity::builder;
 use crate::utilities::logging::Level;
 
 #[group]
@@ -17,12 +17,32 @@ async fn sudo(ctx: &Context, msg: &Message) -> CommandResult {
 }
 
 #[command]
-#[num_args(1)]
+#[max_args(1)]
 async fn retrieve_logs(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
-    let num_of_lines = args.single::<usize>()?;
-    let dump = LOGGER.lock().await.extract_entries(num_of_lines).await;
-    msg.channel_id.say(&ctx.http, dump).await?;
-    Ok(())
+    if args.len() == 1 {
+        let num_of_lines = args.single::<usize>()?;
+        let dump = LOGGER.lock().await.extract_entries(num_of_lines).await;
+        msg.channel_id.say(&ctx.http, dump).await?;
+        return Ok(())
+    }
+    let filepath = LOGGER.lock().await.get_logfile_path();
+    match filepath
+    {
+        None => {
+            msg.channel_id.say(&ctx.http, "No logfile exist").await?;
+            Ok(())
+        }
+        Some(filepath) => {
+            let body = String::from("The logfile is attached!");
+            msg.channel_id.send_message(&ctx.http, |m| {
+                m.content(body);
+                m.add_file(filepath.as_str());
+                m
+            }).await?;
+            Ok(())
+        }
+        
+    }
 }
 
 #[command]
@@ -63,10 +83,7 @@ async fn purge_channel(ctx: &Context, msg: &Message) -> CommandResult {
             }
             msg.channel_id.say(&ctx.http, "Purged channel").await?;
         }    
-        let result = msg.delete(&ctx.http).await;
-        if let _ = result {
-            
-        }
+        let _result = msg.delete(&ctx.http).await;
         
     }
     else {

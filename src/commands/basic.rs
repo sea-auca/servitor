@@ -7,7 +7,7 @@ const ABOUT_MSG: &str = "Hello! This is simple utility bot developed by our comm
     We are still in process of development and new features will be added later";
 
 #[group]
-#[commands(ping, echo, fortune, about, member_me)]
+#[commands(ping, echo, fortune, about, member_me, avatar)]
 struct General;
 
 #[command]
@@ -20,10 +20,14 @@ async fn ping(ctx: &Context, msg: &Message) -> CommandResult {
 }
 
 #[command]
-#[min_args(1)]
+#[min_args(0)]
 #[description("Returns arguments provided to function.")]
 #[usage("[args]")]
 async fn echo(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
+    if args.len() == 0 {
+        msg.channel_id.say(&ctx.http, "Joe who? Joe mama!").await?;
+        return Ok(())
+    }
     msg.channel_id.say(&ctx.http, args.message()).await?;
     Ok(())
 }
@@ -68,6 +72,36 @@ async fn member_me(ctx: &Context, msg: &Message) -> CommandResult {
                 };
             }
         }
+    }
+    Ok(())
+}
+
+#[command]
+#[description("get avatar of user specified")]
+#[num_args(1)]
+async fn avatar(ctx: &Context, msg: &Message) -> CommandResult
+{
+    if msg.mentions.len() == 0 {
+        return Ok(())
+    }
+    let avatar_url = msg.mentions.get(0).unwrap().avatar_url();
+    match avatar_url {
+        None => {
+            msg.channel_id
+                .say(&ctx.http, "How can I give you an avatar if there is no one? Shame on you")
+                .await?;
+        }   
+        Some(avatar_url) => {
+            msg.channel_id.send_message(&ctx.http, |m| {
+                m.embed(|e| {
+                    e.title(format!("{}'s avatar", msg.mentions.get(0).unwrap().name));
+                    e.image(avatar_url.as_str());
+                    e.url(avatar_url.as_str());
+                    e
+                });
+                m
+            }).await?;
+        }   
     }
     Ok(())
 }
