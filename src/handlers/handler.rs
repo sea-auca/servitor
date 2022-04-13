@@ -34,10 +34,17 @@ impl EventHandler for Handler {
     
     async fn guild_member_addition(&self, ctx: Context, _guild_id: GuildId, new_member: Member) {
         let general_channel_id = ChannelId(882988311138959430);
+        let (rules_channel, announcements, roles_channel) = 
+            (ChannelId(709439871512477756),ChannelId(896342671973572618),ChannelId(888679233948377109));
         let greeting = MessageBuilder::new()
             .push("Hello, ")
             .mention(&new_member)
-            .push("! Please familiarize yourself with #rules and #announcements")
+            .push("! Please familiarize yourself with  ")
+            .channel(rules_channel)
+            .push(", ")
+            .channel(announcements)
+            .push(" and ")
+            .channel(roles_channel)
             .build();
         if let Err(why) = general_channel_id.say(&ctx.http, &greeting).await {
             LOGGER
@@ -78,38 +85,54 @@ impl EventHandler for Handler {
             return;
         }
         let role = role_id.parse::<u64>().unwrap();
-        if let Some(guild_id) = add_reaction.guild_id {
-            if let Some(guild) = guild_id.to_guild_cached(&ctx).await {
-                match add_reaction.user_id {
-                    Some(user_id) => {
-                        if let Ok(mut member) = guild.member(&ctx, &user_id).await {
-                            match member.add_role(&ctx, RoleId(role)).await {
-                                Ok(_) => {
-                                    LOGGER.lock().await.write_log(
-                                        format!("Given role {} to user {}", role, member.user.name),
-                                        Level::Trace,
-                                    ).await;
-                                }
-                                Err(_) => {
-                                    LOGGER.lock().await.write_log(
-                                        format!(
-                                            "Error giving role {} to user {}",
-                                            role, member.user.name
-                                        ),
-                                        Level::Warning,
-                                    ).await;
-                                }
-                            };
-                        }
-                    }
-                    None => {
-                        LOGGER
-                            .lock()
-                            .await
-                            .write_log(format!("No user id provided in reaction"), Level::Trace)
-                            .await;
-                    }
-                }
+        let guild_id  = add_reaction.guild_id;
+        if guild_id == None {
+            return
+        }
+        let guild = guild_id
+            .unwrap()
+            .to_guild_cached(&ctx)
+            .await;
+        let guild = match guild {
+            Some(guild) => {
+                guild
+            }
+            None => {
+                return
+            }
+        };
+        if add_reaction.user_id == None {
+            LOGGER
+                .lock()
+                .await
+                .write_log(format!("No user id provided in reaction"), Level::Trace)
+                .await;
+            return    
+        }
+        let member = guild.member(&ctx, add_reaction.user_id.unwrap()).await;
+        let mut member = match member {
+            Ok(member) => {
+                member
+            }
+            Err(_) => {
+                return
+            }
+        };
+        match member.add_role(&ctx, RoleId(role)).await {
+            Ok(_) => {
+                LOGGER.lock().await.write_log(
+                    format!("Given role {} to user {}", role, member.user.name),
+                    Level::Trace,
+                ).await;
+            }
+            Err(_) => {
+                LOGGER.lock().await.write_log(
+                    format!(
+                        "Error giving role {} to user {}",
+                        role, member.user.name
+                    ),
+                    Level::Warning,
+                ).await;
             }
         }
     }

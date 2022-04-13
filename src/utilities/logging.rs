@@ -42,7 +42,7 @@ impl Logger {
             path: String::new(),
             file: None,
             bytes_written: 0,
-            max_bytes: 0 as usize + 1
+            max_bytes: 1e7 as usize + 1
         }
     }
     pub async fn configure_logger(&mut self, path: &str) {
@@ -74,6 +74,19 @@ impl Logger {
         self.bytes_written += bytes_len;
         self.rotate_on_overflow().await;   
     }
+    
+    pub fn get_logfile_path(&mut self) -> Option<String>
+    {
+        match self.file {
+            None => {
+                None
+            }    
+            Some(_) => {
+                Some(self.path.clone())
+            }
+        }
+    }
+    
     pub async fn extract_entries(&mut self, amount: usize) -> String {
         if let None = self.file {
             return String::from("No log file!");
