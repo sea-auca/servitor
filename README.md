@@ -70,4 +70,4 @@ $ docker run servitor -e DISCORD_TOKEN=<token> DISCORD_DATABASE_HOST=<hostaddr> 
 
 ## Release information
 
-Release notes are available at [CHANGELOG.ьв](https://github.com/sea-auca/servitor/blob/master/Changelog.md)
+Release notes are available at [CHANGELOG.md](https://github.com/sea-auca/servitor/blob/master/CHANGELOG.md)

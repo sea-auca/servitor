@@ -20,7 +20,7 @@ async fn sudo(ctx: &Context, msg: &Message) -> CommandResult {
 #[num_args(1)]
 async fn retrieve_logs(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
     let num_of_lines = args.single::<usize>()?;
-    let dump = LOGGER.lock().unwrap().extract_entries(num_of_lines);
+    let dump = LOGGER.lock().await.extract_entries(num_of_lines).await;
     msg.channel_id.say(&ctx.http, dump).await?;
     Ok(())
 }
@@ -46,7 +46,7 @@ async fn add_reaction_role(ctx: &Context, msg: &Message, mut args: Args) -> Comm
 #[only_in(guilds)]
 #[description("ATTENTION UNSAFE FUNCTION. Deletes every single message found in the channel where message was sent.")]
 async fn purge_channel(ctx: &Context, msg: &Message) -> CommandResult {
-    LOGGER.lock().unwrap().write_log(format!("Starting purging channel {}", msg.channel_id.0), Level::Debug);
+    LOGGER.lock().await.write_log(format!("Starting purging channel {}", msg.channel_id.0), Level::Debug).await;
     let channel = msg.channel(&ctx.cache).await.unwrap();
     if let Channel::Guild(channel) = channel {
         let messages = channel.messages(&ctx.http, |retriever| {
@@ -55,10 +55,10 @@ async fn purge_channel(ctx: &Context, msg: &Message) -> CommandResult {
             for message in messages.iter_mut() {
                 let result = message.delete(&ctx.http).await;
                 if let Ok(_) = result {
-                    LOGGER.lock().unwrap().write_log(format!("Deleted message {}", message.id.0), Level::Debug);
+                    LOGGER.lock().await.write_log(format!("Deleted message {}", message.id.0), Level::Debug).await;
                 }
                 else {
-                    LOGGER.lock().unwrap().write_log(format!("Failed to delete message {}", message.id.0), Level::Warning);
+                    LOGGER.lock().await.write_log(format!("Failed to delete message {}", message.id.0), Level::Warning).await;
                 }
             }
             msg.channel_id.say(&ctx.http, "Purged channel").await?;
@@ -70,7 +70,7 @@ async fn purge_channel(ctx: &Context, msg: &Message) -> CommandResult {
         
     }
     else {
-        LOGGER.lock().unwrap().write_log(format!("Failed to purge channel {}", msg.channel_id.0), Level::Debug);
+        LOGGER.lock().await.write_log(format!("Failed to purge channel {}", msg.channel_id.0), Level::Debug).await;
     }
     Ok(())
 }

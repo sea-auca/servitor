@@ -74,8 +74,9 @@ impl DatabaseClient {
             Err(err) => {
                 LOGGER
                     .lock()
-                    .unwrap()
-                    .write_log(format!("Error executing select statement: {}", err), Level::Error);
+                    .await
+                    .write_log(format!("Error executing select statement: {}", err), Level::Error)
+                    .await;
             }   
         }
     }
@@ -89,14 +90,16 @@ impl DatabaseClient {
             Ok(count) => {
                 LOGGER
                     .lock()
-                    .unwrap()
-                    .write_log(format!("Inserted {} rows", count), Level::Debug);    
+                    .await
+                    .write_log(format!("Inserted {} rows", count), Level::Debug)
+                    .await;    
             }
             Err(err) => {
                 LOGGER
                     .lock()
-                    .unwrap()
-                    .write_log(format!("Error executing insert statement: {}", err), Level::Error);
+                    .await
+                    .write_log(format!("Error executing insert statement: {}", err), Level::Error)
+                    .await;
             }   
         }
         
