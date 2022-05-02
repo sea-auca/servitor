@@ -71,25 +71,14 @@ impl Config {
 /// It is intended that the settings fields are accessed at the startup process
 /// to provide a correct initialization of bot's components.
 pub struct Settings {
-    pub config: Config,
-    pub intents: GatewayIntents,
-    pub framework: StandardFramework,
-    pub handler: handler::Handler,
+    pub config: Config
 }
 
 impl Settings {
-    /// Creates new settings adding elements of `group` to `self.framework`'s command groups
-    /// and setting `help` as `self.framework`'s help command. 
-    /// Also configures [`shared::LOGGER`](struct@crate::global::shared::LOGGER) and [`shared::BOT_DATABASE`](struct@crate::global::shared::BOT_DATABASE).
-    pub async fn create_settings(
-        group: &Vec<&'static CommandGroup>,
-        help: &'static HelpCommand,
-    ) -> Settings {
+    /// Creates new settings and configures [`shared::LOGGER`](struct@crate::global::shared::LOGGER) and [`shared::BOT_DATABASE`](struct@crate::global::shared::BOT_DATABASE).
+    pub async fn create_settings() -> Settings {
         let config = Config::new();
-        let mut framework = framework::create_framework("~").help(help);
-        for g in group {
-            framework.group_add(g);
-        }
+        
         {
             LOGGER
                 .lock()
@@ -101,13 +90,8 @@ impl Settings {
                 .await
                 .configure(&config.get_database_conf()).await;
         }
-        let intents = GatewayIntents::all();
-        let handler = handler::Handler;
         Settings {
-            config,
-            intents,
-            framework,
-            handler,
+            config
         }
     }
 }

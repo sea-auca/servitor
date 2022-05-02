@@ -17,7 +17,7 @@ async fn sudo(ctx: &Context, msg: &Message) -> CommandResult {
 }
 
 #[command]
-#[max_args(1)]
+#[num_args(1)]
 async fn retrieve_logs(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
     if args.len() == 1 {
         let num_of_lines = args.single::<usize>()?;
